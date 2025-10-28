@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxy-nginx
+  namespace: shop
+data:
+  default.conf: |
+    # Map dùng cho WebSocket hoặc SSE (giữ nguyên, không lỗi)
+    map $http_upgrade $connection_upgrade {
+      default upgrade;
+      ''      close;
+    }
+
+    server {
+      listen 80;
+      server_name _;
+
+      # Giới hạn kích thước upload (tăng nếu backend nhận file lớn)
+      client_max_body_size 50m;
+
+      # --------------------------
+      # FRONTEND (UI)
+      # --------------------------
+      location / {
+        proxy_pass http://frontend.shop.svc.cluster.local;
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header Upgrade    $http_upgrade;
+      }
+
+      # --------------------------
+      # BACKEND API
+      # --------------------------
+      location /api/ {
+        proxy_pass http://backend.shop.svc.cluster.local:8080;
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_http_version 1.1;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header Upgrade    $http_upgrade;
+
+        # Tăng timeout nếu API xử lý lâu
+        proxy_read_timeout 300s;
+      }
+
+      # --------------------------
+      # MINIO (public object)
+      # --------------------------
+      location /minio-public/ {
+        # Bỏ prefix /minio-public/ khi chuyển sang MinIO
+        rewrite ^/minio-public/(.*)$ /$1 break;
+
+        proxy_pass http://minio.shop.svc.cluster.local:9000;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_redirect off;
+      }
+    }

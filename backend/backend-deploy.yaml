@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: thanh2909/simple-fullstack-docker-v3-ci-tests-api:v0.4
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: backend-secrets
+            - secretRef:
+                name: minio-secrets
+          env:
+            - name: MINIO_ENDPOINT
+              value: http://minio.shop.svc.cluster.local:9000
+            - name: MINIO_BUCKET
+              value: shop-bucket
