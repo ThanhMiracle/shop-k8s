@@ -15,18 +15,18 @@ spec:
     spec:
       containers:
         - name: minio
-          image: quay.io/minio/minio:RELEASE.2024-09-01T00-00-00Z
+          image: quay.io/minio/minio:RELEASE.2024-06-13T22-53-53Z
           args: ["server", "/data", "--console-address", ":9001"]
+          ports:
+            - containerPort: 9000   # API
+            - containerPort: 9001   # Web console
           envFrom:
             - secretRef:
                 name: minio-secrets
-          ports:
-            - containerPort: 9000
-            - containerPort: 9001
           volumeMounts:
             - name: data
               mountPath: /data
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: minio-data
+            claimName: minio-pvc
