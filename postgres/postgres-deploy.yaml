@@ -15,16 +15,16 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:15
-          envFrom:
-            - secretRef:
-                name: db-secrets
+          image: postgres:15-alpine
           ports:
             - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: db-secrets   # ✅ trỏ đúng Secret
           volumeMounts:
-            - name: data
+            - name: pgdata
               mountPath: /var/lib/postgresql/data
       volumes:
-        - name: data
+        - name: pgdata
           persistentVolumeClaim:
-            claimName: postgres-data
+            claimName: pg-pvc

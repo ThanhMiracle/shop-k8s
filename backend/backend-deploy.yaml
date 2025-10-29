@@ -17,14 +17,60 @@ spec:
         - name: backend
           image: thanh2909/simple-fullstack-docker-v3-ci-tests-api:v0.4
           ports:
-            - containerPort: 8080
+            - containerPort: 8000
           envFrom:
             - secretRef:
-                name: backend-secrets
+                name: backend-secrets   # ✅ backend secret (JWT, keys, ... nếu có)
             - secretRef:
-                name: minio-secrets
+                name: db-secrets        # ✅ dùng cùng secret Postgres của bạn
+            - secretRef:
+                name: minio-secrets     # ✅ cho MinIO (nếu có access/secret key)
           env:
+            # MinIO config
             - name: MINIO_ENDPOINT
               value: http://minio.shop.svc.cluster.local:9000
             - name: MINIO_BUCKET
               value: shop-bucket
+
+            # PostgreSQL config
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: POSTGRES_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: POSTGRES_DB
+
+          # readiness/liveness để rollout ổn định
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
