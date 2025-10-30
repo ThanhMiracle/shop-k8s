@@ -23,7 +23,7 @@ spec:
             # Nếu bạn đã có proxy service (nginx hoặc cổng 8000/8080)
             # thì frontend gọi qua proxy nội bộ trong namespace shop
             - name: VITE_API_BASE_URL
-              value: "http://backend.shop.svc.cluster.local:8000"
+              value: "/api"
 
           # readiness/liveness probe để đảm bảo rollout mượt
           readinessProbe:
