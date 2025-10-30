@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: thanhshop.eastasia.cloudapp.azure.com
+    - host: thanhshoplb.eastasia.cloudapp.azure.com
       http:
         paths:
           - path: /
