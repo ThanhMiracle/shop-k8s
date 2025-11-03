@@ -4,17 +4,26 @@ metadata:
   name: shop-ingress
   namespace: shop
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
 spec:
   ingressClassName: nginx
   rules:
     - host: thanhshoplb.eastasia.cloudapp.azure.com
       http:
         paths:
+          # Frontend trên "/"
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: proxy
+                name: frontend
                 port:
                   number: 80
+          # Backend trên "/api" (giữ nguyên prefix /api khi forward)
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8000
