@@ -8,10 +8,9 @@ metadata:
 spec:
   selector:
     app: frontend
-  type: ClusterIP
+  type: NodePort
   ports:
     - name: http
-      port: 80
-      targetPort: 80
-      
-    
+      port: 80          # cổng Service trong cluster
+      targetPort: 80    # cổng container trong Pod
+      nodePort: 30080   # cổng mở trên Node (30000–32767). Có thể bỏ dòng này để K8s tự cấp.
