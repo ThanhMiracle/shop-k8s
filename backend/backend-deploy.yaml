@@ -22,21 +22,79 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
-          envFrom:
-            - secretRef:
-                name: backend-secrets
+
+          # NẠP ĐÚNG CÁC BIẾN MÀ ẢNH BACKEND CẦN
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: DATABASE_URL
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: JWT_SECRET
+            - name: JWT_EXPIRE_MINUTES
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: JWT_EXPIRE_MINUTES
+
+            - name: MINIO_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: MINIO_ENDPOINT
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: MINIO_SECRET_KEY
+            - name: MINIO_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: MINIO_BUCKET
+            - name: MINIO_SECURE
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: MINIO_SECURE
+            - name: MINIO_PUBLIC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secrets
+                  key: MINIO_PUBLIC_URL
+
+          # PROBES: nới lỏng để app có thời gian kết nối DB/MinIO
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            failureThreshold: 30     # ~60s nếu period=2s
+            periodSeconds: 2
           readinessProbe:
             httpGet:
               path: /health
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
+            failureThreshold: 6
           livenessProbe:
             httpGet:
               path: /health
               port: 8000
             initialDelaySeconds: 20
             periodSeconds: 10
+            failureThreshold: 3
+
           resources:
             requests:
               cpu: "100m"
