@@ -16,16 +16,12 @@ spec:
       containers:
         - name: frontend
           image: thanh2909/simple-fullstack-docker-v3-ci-tests-frontend:v0.2
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
-
           env:
-            # Nếu bạn đã có proxy service (nginx hoặc cổng 8000/8080)
-            # thì frontend gọi qua proxy nội bộ trong namespace shop
-            - name: VITE_API_BASE_URL
-              value: "/api"
-
-          # readiness/liveness probe để đảm bảo rollout mượt
+            - name: API_BASE                 # <-- script cần biến này
+              value: "http://20.205.1.66:30081"
           readinessProbe:
             httpGet:
               path: /
@@ -38,7 +34,6 @@ spec:
               port: 80
             initialDelaySeconds: 20
             periodSeconds: 10
-
           resources:
             requests:
               cpu: "100m"

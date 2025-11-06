@@ -26,10 +26,7 @@ spec:
           # NẠP ĐÚNG CÁC BIẾN MÀ ẢNH BACKEND CẦN
           env:
             - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: backend-secrets
-                  key: DATABASE_URL
+              value: postgresql://shopuser:changeme-dev@postgres:5432/shopdb
 
             - name: JWT_SECRET
               valueFrom:
